@@ -10,39 +10,7 @@ A production-grade, full-stack Airbnb-inspired marketplace built with **Next.js 
 
 The application adopts a **Layered Architecture** with strict separation of concerns, decoupling the presentation layer, REST API interface, domain business logic, AI assistant subsystem, and database persistence.
 
-```mermaid
-flowchart TD
-    Client["Client Browser\n(Next.js 15 SSR / React 19)"]
-    
-    subgraph Frontend["Frontend (Port 3000)"]
-        Components["UI Components & Pages\n(App Router, Tailwind CSS v4)"]
-        ClientAPI["API Client & Hooks\n(useAuth, useWishlist, useListing)"]
-        ChatWidget["StayFinder AI Widget\n(Floating Drawer, Context Detection)"]
-    end
-    
-    subgraph Backend["FastAPI Backend (Port 8000)"]
-        Router["API Routers\n(/api/auth, /api/listings, /api/bookings, /api/chat, etc.)"]
-        AuthDep["Security & Dependency Injection\n(require_auth, require_host, get_db)"]
-        ServiceLayer["Service Layer\n(Business Logic, Transaction Boundaries)"]
-        RepoLayer["Repository Layer\n(Query Building, Eager Loading, Aggregations)"]
-    end
-
-    subgraph ExternalServices["External AI & Cloud Services"]
-        GeminiAI["Google Gemini 1.5 Flash API\n(Context-Aware RAG Prompting)"]
-        Postgres[("Supabase PostgreSQL\n(10 Tables, Strict Foreign Keys)")]
-    end
-
-    Client <--> Components
-    Components <--> ClientAPI
-    Components <--> ChatWidget
-    ClientAPI <== HTTP / JSON ==> Router
-    ChatWidget <== POST /api/chat ==> Router
-    Router --> AuthDep
-    Router --> ServiceLayer
-    ServiceLayer --> RepoLayer
-    Router --> GeminiAI
-    RepoLayer <--> Postgres
-```
+<img width="1502" height="657" alt="image" src="https://github.com/user-attachments/assets/f5023e26-2d42-4cd2-b79f-466ba872b6b4" />
 
 ---
 
