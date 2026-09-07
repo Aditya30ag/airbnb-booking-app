@@ -1,0 +1,6 @@
+{
+  "name": "Airbnb Marketplace Scaffolding",
+  "description": "Initial project scaffolding for an Airbnb-inspired marketplace using FastAPI and Next.js.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
