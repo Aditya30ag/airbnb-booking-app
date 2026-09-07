@@ -136,8 +136,43 @@ def search_listings(
 
     return listings, total_count
 
+CITY_COORDINATES = {
+    "goa": (15.4989, 73.8278),
+    "udaipur": (24.5854, 73.7125),
+    "gurgaon": (28.4595, 77.0266),
+    "hyderabad": (17.3850, 78.4867),
+    "delhi": (28.6139, 77.2090),
+    "new delhi": (28.6139, 77.2090),
+    "manali": (32.2432, 77.1892),
+    "bangalore": (12.9716, 77.5946),
+    "bengaluru": (12.9716, 77.5946),
+    "mumbai": (19.0760, 72.8777),
+    "jaipur": (26.9124, 75.7873),
+    "rishikesh": (30.0869, 78.2676),
+    "kerala": (9.9312, 76.2673),
+    "kochi": (9.9312, 76.2673),
+    "pondicherry": (11.9416, 79.8083),
+    "shimla": (31.1048, 77.1734),
+    "varkala": (8.7379, 76.7163),
+    "havelock": (11.9761, 92.9876),
+    "gokarna": (14.5479, 74.3188),
+    "gulmarg": (34.0484, 74.3805),
+    "leh": (34.1526, 77.5771),
+    "dharamshala": (32.2190, 76.3234),
+    "kasol": (32.0100, 77.3152),
+    "ooty": (11.4102, 76.6950),
+}
+
 def create_listing(db: Session, host_id: UUID, data: ListingCreate) -> Listing:
     """Create listing with images and amenities in one transaction"""
+    lat = data.latitude
+    lng = data.longitude
+    if lat is None or lng is None:
+        city_lower = (data.city or "").lower().strip()
+        coords = CITY_COORDINATES.get(city_lower, (15.4989, 73.8278))
+        lat = coords[0]
+        lng = coords[1]
+
     new_listing = Listing(
         id=uuid.uuid4(),
         host_id=host_id,
@@ -155,8 +190,8 @@ def create_listing(db: Session, host_id: UUID, data: ListingCreate) -> Listing:
         city=data.city,
         state=data.state,
         country=data.country,
-        latitude=data.latitude,
-        longitude=data.longitude,
+        latitude=lat,
+        longitude=lng,
         is_active=True
     )
     db.add(new_listing)

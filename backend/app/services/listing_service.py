@@ -42,6 +42,8 @@ def service_search_listings(
             is_active=listing.is_active,
             cover_image_url=getattr(listing, 'cover_image_url', None),
             host_id=listing.host_id,
+            latitude=listing.latitude,
+            longitude=listing.longitude,
         ))
     has_next = (page * limit) < total
     return PaginatedListings(items=items, total=total, page=page, page_size=limit, has_next=has_next)

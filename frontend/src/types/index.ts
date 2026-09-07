@@ -35,6 +35,8 @@ export interface ListingCardResponse {
   is_active: boolean;
   cover_image_url?: string;
   host_id: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface ListingDetailResponse {

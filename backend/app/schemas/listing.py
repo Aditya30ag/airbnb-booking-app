@@ -81,6 +81,8 @@ class ListingCardResponse(BaseModel):
     is_active: bool
     cover_image_url: Optional[str] = None
     host_id: UUID
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
     model_config = ConfigDict(from_attributes=True, extra='ignore')
 
 class ListingDetailResponse(BaseModel):

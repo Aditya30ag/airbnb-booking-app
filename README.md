@@ -323,20 +323,20 @@ flowchart TD
 
     Browser -->|1. Initiate Checkout| BookingAPI
     BookingAPI -->|2. Create Payment Intent Request| PayAPI
-    PayAPI -->|3. Acquire Distributed Lock & Check Idempotency| IdempotencyStore
-    PayAPI -->|4. Create Order / Intent with Escrow Metadata| Stripe
-    Stripe -->|5. Client Secret & SDK Ephemeral Key| Browser
-    Browser -->|6. Submit 3D-Secure Biometrics / OTP| Stripe
+    PayAPI -->|3. Acquire Distributed Lock and Check Idempotency| IdempotencyStore
+    PayAPI -->|4. Create Order or Intent with Escrow Metadata| Stripe
+    Stripe -->|5. Client Secret and SDK Ephemeral Key| Browser
+    Browser -->|6. Submit 3D-Secure Biometrics or OTP| Stripe
     Stripe -->|7. Async Server-to-Server Webhook| WebhookWorker
-    WebhookWorker -->|8. Verify HMAC Signature & Parse Event| WebhookWorker
-    WebhookWorker -->|9. Write Double-entry Journal & Outbox| LedgerDB
+    WebhookWorker -->|8. Verify HMAC Signature and Parse Event| WebhookWorker
+    WebhookWorker -->|9. Write Double-entry Journal and Outbox| LedgerDB
     LedgerDB -.->|Atomic Insert| OutboxTable
     OutboxTable -->|10. Stream Committed Records| OutboxRelay
-    OutboxRelay -->|11. Publish Event (payment.succeeded)| Kafka
-    Kafka -->|12. Consume Event: Update Booking -> confirmed| BookingAPI
+    OutboxRelay -->|11. Publish payment.succeeded Event| Kafka
+    Kafka -->|12. Consume Event: Confirm Booking| BookingAPI
     BookingAPI -->|Update Status| BookingDB
     Kafka -->|13. Trigger Customer Confirmation Email| NotificationService
-    Kafka -->|14. Schedule Payout Release (Check-in + 24h)| HostPayoutEngine
+    Kafka -->|14. Schedule Payout Release at Check-in| HostPayoutEngine
 ```
 
 ---

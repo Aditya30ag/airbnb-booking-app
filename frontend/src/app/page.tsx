@@ -7,7 +7,17 @@ import { ListingCard } from '@/components/ui/ListingCard';
 import { listingService } from '@/services/listingService';
 import { wishlistApi } from '@/services/wishlistApi';
 import type { ListingCardResponse } from '@/types';
-import { Search, SlidersHorizontal, MapPin, Sparkles } from 'lucide-react';
+import { Search, SlidersHorizontal, MapPin, Sparkles, Map as MapIcon, List } from 'lucide-react';
+import dynamic from 'next/dynamic';
+
+const ExploreMap = dynamic(() => import('@/components/map/ExploreMap'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-[650px] bg-gray-100 animate-pulse rounded-2xl flex items-center justify-center text-gray-400 font-medium">
+      Loading interactive map...
+    </div>
+  ),
+});
 
 export default function LandingExplorePage() {
   const [listings, setListings] = useState<ListingCardResponse[]>([]);
@@ -18,6 +28,7 @@ export default function LandingExplorePage() {
   const [page, setPage] = useState(1);
   const [hasNext, setHasNext] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
 
   // Fetch wishlisted listing IDs for current user
   useEffect(() => {
@@ -180,7 +191,16 @@ export default function LandingExplorePage() {
               Clear all filters
             </button>
           </div>
+        ) : viewMode === 'map' ? (
+          // Interactive Map View
+          <div className="animate-fade-in">
+            <ExploreMap
+              listings={listings}
+              className="w-full h-[calc(100vh-230px)] min-h-[520px]"
+            />
+          </div>
         ) : (
+          // Grid View
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10">
               {listings.map((listing, index) => (
@@ -197,7 +217,7 @@ export default function LandingExplorePage() {
                 <button
                   onClick={handleLoadMore}
                   disabled={loadingMore}
-                  className="px-8 py-3.5 bg-black hover:bg-gray-800 text-white font-semibold text-sm rounded-2xl shadow-sm transition active:scale-95 disabled:opacity-50 flex items-center gap-2"
+                  className="px-8 py-3.5 bg-black hover:bg-gray-800 text-white font-semibold text-sm rounded-2xl shadow-sm transition active:scale-95 disabled:opacity-50 flex items-center gap-2 cursor-pointer"
                 >
                   {loadingMore ? 'Loading more stays...' : 'Show more stays'}
                 </button>
@@ -206,6 +226,31 @@ export default function LandingExplorePage() {
           </>
         )}
       </main>
+
+      {/* Floating Map / Grid Toggle Pill (Airbnb signature feature) */}
+      {!loading && listings.length > 0 && (
+        <div className="fixed bottom-7 left-1/2 -translate-x-1/2 z-30">
+          <button
+            onClick={() => {
+              setViewMode((prev) => (prev === 'grid' ? 'map' : 'grid'));
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className="flex items-center gap-2 px-5 py-3.5 rounded-full bg-gray-900 hover:bg-black text-white text-sm font-semibold shadow-2xl hover:scale-105 transition-all duration-200 active:scale-95 border border-gray-700 cursor-pointer"
+          >
+            {viewMode === 'grid' ? (
+              <>
+                <span>Show map</span>
+                <MapIcon className="w-4 h-4 text-white" />
+              </>
+            ) : (
+              <>
+                <span>Show list</span>
+                <List className="w-4 h-4 text-white" />
+              </>
+            )}
+          </button>
+        </div>
+      )}
 
       {/* Footer */}
       <footer className="border-t bg-gray-50 mt-16 py-8 text-xs text-gray-500">

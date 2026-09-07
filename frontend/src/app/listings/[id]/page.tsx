@@ -11,6 +11,12 @@ import { ReviewSection } from '@/components/reviews/ReviewSection';
 import { Header } from '@/components/navigation/Header';
 import { FavoriteButton } from '@/components/ui/FavoriteButton';
 import { MapPin, Users, Bed, Bath, Star, Share, Award } from 'lucide-react';
+import dynamic from 'next/dynamic';
+
+const ListingLocationMap = dynamic(
+  () => import('@/components/map/ListingLocationMap'),
+  { ssr: false, loading: () => <div className="h-[300px] w-full bg-gray-100 animate-pulse rounded-2xl my-6" /> }
+);
 
 export default function ListingDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -161,6 +167,17 @@ export default function ListingDetailPage({ params }: { params: Promise<{ id: st
             <div className="border-b pb-8">
               <AmenityList amenities={listing.amenities || []} />
             </div>
+
+            {/* Map Location Section */}
+            <ListingLocationMap
+              latitude={listing.latitude}
+              longitude={listing.longitude}
+              title={listing.title}
+              address={listing.address}
+              city={listing.city}
+              state={listing.state}
+              country={listing.country}
+            />
 
             {/* Reviews Section */}
             <div>
