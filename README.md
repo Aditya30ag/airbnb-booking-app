@@ -348,8 +348,7 @@ flowchart TD
 * **Network Segmentation**: The payment microservice lives inside a hardened private Virtual Private Cloud (VPC) with egress filtering, mutual TLS (mTLS) authentication, and strict IP allowlists for PSP endpoints.
 
 #### B. Distributed Idempotency & Concurrency Control
-* **Idempotency Key Protocol**: Every checkout request requires a client-supplied or gateway-generated `Idempotency-Key` header:
-  $$\text{IdempotencyKey} = \text{HMAC-SHA256}(\text{guest\_id} + \text{booking\_id} + \text{total\_amount} + \text{currency})$$
+* **Idempotency Key Protocol**: Every checkout request requires a client-supplied or gateway-generated `Idempotency-Key` header.
 * **Atomic Redis Locks**: A Redis lock (`SET lock:<idempotency_key> <uuid> NX PX 30000`) prevents concurrent duplicate charge executions caused by rapid multi-clicks or network retries.
 * **Cached Deterministic Responses**: Once a payment intent transitions to an end state (`succeeded`, `failed`), the completed payload is cached with a 24-hour TTL, ensuring subsequent identical requests receive identical responses without re-charging.
 
@@ -439,8 +438,7 @@ Secure asynchronous webhook ingestion endpoint.
 
 ### 5. Current Implementation Note
 > **Simulated Financial Flow**:
-> In this repository's reference implementation, the checkout process simulates the authorization and settlement flow with 100% mathematical integrity:
-> $$\text{Total} = (\text{nights} \times \text{price\_per\_night}) + \text{cleaning\_fee} + \text{service\_fee} \quad \text{where } \text{service\_fee} = \text{round}(0.12 \times \text{subtotal}, 2)$$
+> In this repository's reference implementation, the checkout process simulates the authorization and settlement flow with 100% mathematical integrity by a simple formula.
 > Upon clicking **"Confirm & Pay"**, the reservation atomically commits to `status = confirmed`, generates a persistent booking record, and links directly to the guest's **Trips** dashboard.
 
 ---
