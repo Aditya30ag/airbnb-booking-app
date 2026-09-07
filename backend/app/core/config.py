@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_ID: str
     GOOGLE_CLIENT_SECRET: str
     FRONTEND_URL: str
+    GEMINI_API_KEY: Optional[str] = None
     ENVIRONMENT: str = "development"
 
     class Config:

@@ -87,7 +87,10 @@ export function ListingForm({ initialData, onSubmit, submitLabel = 'Create listi
       if (isNaN(c) || c < 0) errs.cleaning_fee = 'Cleaning fee cannot be negative';
     }
     if (s === 5) {
-      if (data.images.length === 0) errs.images = 'Add at least one photo of your place';
+      const valid = data.images.filter((img) => Boolean(img.url && img.url.trim()));
+      if (valid.length === 0) {
+        errs.images = 'Please enter a valid photo URL (or click "Use sample photos")';
+      }
     }
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -139,6 +142,16 @@ export function ListingForm({ initialData, onSubmit, submitLabel = 'Create listi
   const setCoverImage = (idx: number) => {
     const next = data.images.map((img, i) => ({ ...img, is_cover: i === idx }));
     setData((prev) => ({ ...prev, images: next }));
+  };
+
+  const fillSamplePhotos = () => {
+    const samples: ImageEntry[] = [
+      { url: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80', is_cover: true, display_order: 0 },
+      { url: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80', is_cover: false, display_order: 1 },
+      { url: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80', is_cover: false, display_order: 2 },
+    ];
+    setData((prev) => ({ ...prev, images: samples }));
+    setErrors((prev) => ({ ...prev, images: undefined }));
   };
 
   const toggleAmenity = (id: string) => {
@@ -382,15 +395,24 @@ export function ListingForm({ initialData, onSubmit, submitLabel = 'Create listi
       {/* Step 5: Photos */}
       {step === 5 && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
             <label className="block text-xs font-bold uppercase text-gray-600">Photo URLs *</label>
-            <button
-              type="button"
-              onClick={addImage}
-              className="flex items-center gap-1.5 text-xs font-bold text-[#FF5A5F] hover:text-[#E0484D] transition"
-            >
-              <Plus className="w-4 h-4" /> Add another photo
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={fillSamplePhotos}
+                className="text-xs font-bold text-blue-600 hover:text-blue-800 underline transition"
+              >
+                Use sample photos
+              </button>
+              <button
+                type="button"
+                onClick={addImage}
+                className="flex items-center gap-1.5 text-xs font-bold text-[#FF5A5F] hover:text-[#E0484D] transition"
+              >
+                <Plus className="w-4 h-4" /> Add photo
+              </button>
+            </div>
           </div>
 
           {errors.images && <p className="text-rose-500 text-xs font-medium">{errors.images}</p>}
@@ -399,13 +421,23 @@ export function ListingForm({ initialData, onSubmit, submitLabel = 'Create listi
             <div className="border border-dashed border-gray-200 rounded-3xl p-8 text-center">
               <ImageIcon className="w-10 h-10 text-gray-300 mx-auto mb-2" />
               <p className="text-sm font-bold text-gray-700">No photos added yet</p>
-              <button
-                type="button"
-                onClick={addImage}
-                className="mt-3 px-4 py-2 bg-black text-white text-xs font-semibold rounded-xl"
-              >
-                Add photo URL
-              </button>
+              <p className="text-xs text-gray-400 mt-1 mb-4">Paste image URLs or populate realistic photos instantly.</p>
+              <div className="flex items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={fillSamplePhotos}
+                  className="px-4 py-2 bg-[#FF5A5F] text-white text-xs font-semibold rounded-xl hover:bg-[#E0484D] transition"
+                >
+                  Use sample photos
+                </button>
+                <button
+                  type="button"
+                  onClick={addImage}
+                  className="px-4 py-2 bg-black text-white text-xs font-semibold rounded-xl hover:bg-gray-800 transition"
+                >
+                  Add custom URL
+                </button>
+              </div>
             </div>
           ) : (
             <div className="space-y-3">

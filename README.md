@@ -1,6 +1,6 @@
 # Airbnb Marketplace
 
-A production-grade, full-stack Airbnb-inspired marketplace built with **Next.js 15 (App Router)** and a **FastAPI** backend backed by **Supabase PostgreSQL** via **SQLAlchemy**.
+A production-grade, full-stack Airbnb-inspired marketplace built with **Next.js 15 (App Router)** and a **FastAPI** backend backed by **Supabase PostgreSQL** via **SQLAlchemy**, featuring an embedded **AI Assistant**.
 
 > **Quick Setup**: For local environment setup, dependency installation, database seeding, and running the services, please see [SETUP.md](SETUP.md).
 
@@ -8,7 +8,7 @@ A production-grade, full-stack Airbnb-inspired marketplace built with **Next.js 
 
 ## 🏛️ System Architecture
 
-The application adopts a **Layered Architecture** with strict separation of concerns, decoupling the presentation layer, REST API interface, domain business logic, and database persistence.
+The application adopts a **Layered Architecture** with strict separation of concerns, decoupling the presentation layer, REST API interface, domain business logic, AI assistant subsystem, and database persistence.
 
 ```mermaid
 flowchart TD
@@ -17,25 +17,30 @@ flowchart TD
     subgraph Frontend["Frontend (Port 3000)"]
         Components["UI Components & Pages\n(App Router, Tailwind CSS v4)"]
         ClientAPI["API Client & Hooks\n(useAuth, useWishlist, useListing)"]
+        ChatWidget["StayFinder AI Widget\n(Floating Drawer, Context Detection)"]
     end
     
     subgraph Backend["FastAPI Backend (Port 8000)"]
-        Router["API Routers\n(/api/auth, /api/listings, /api/bookings, etc.)"]
+        Router["API Routers\n(/api/auth, /api/listings, /api/bookings, /api/chat, etc.)"]
         AuthDep["Security & Dependency Injection\n(require_auth, require_host, get_db)"]
         ServiceLayer["Service Layer\n(Business Logic, Transaction Boundaries)"]
         RepoLayer["Repository Layer\n(Query Building, Eager Loading, Aggregations)"]
     end
-    
-    subgraph Database["Database Persistence"]
+
+    subgraph ExternalServices["External AI & Cloud Services"]
+        GeminiAI["Google Gemini 1.5 Flash API\n(Context-Aware RAG Prompting)"]
         Postgres[("Supabase PostgreSQL\n(10 Tables, Strict Foreign Keys)")]
     end
 
     Client <--> Components
     Components <--> ClientAPI
+    Components <--> ChatWidget
     ClientAPI <== HTTP / JSON ==> Router
+    ChatWidget <== POST /api/chat ==> Router
     Router --> AuthDep
     Router --> ServiceLayer
     ServiceLayer --> RepoLayer
+    Router --> GeminiAI
     RepoLayer <--> Postgres
 ```
 
@@ -48,6 +53,7 @@ The backend is structured into distinct, decoupled tiers:
 ```
 backend/app/
 ├── api/routes/          # HTTP transport layer (FastAPI routers, endpoint definitions)
+├── routers/             # Specialized service routers (e.g. chat.py for Gemini AI)
 ├── core/                # Global configurations, settings, and auth dependencies
 ├── db/                  # Engine, session factories, and declarative base
 ├── models/              # SQLAlchemy ORM database models
@@ -56,7 +62,7 @@ backend/app/
 └── services/            # Domain services encapsulating business rules
 ```
 
-### 1. Transport Layer (`app/api/routes/`)
+### 1. Transport Layer (`app/api/routes/` & `app/routers/`)
 - Handles HTTP requests, parameter validation (path, query, body), and HTTP status code formatting.
 - Injects dependencies such as database sessions (`get_db`) and authorization guards (`require_auth`, `require_host`).
 - Completely decoupled from direct database access.
@@ -66,7 +72,7 @@ backend/app/
 - Enforces complex business constraints (e.g., verifying guest eligibility before writing a review, triggering rating recalculations, and computing night totals).
 
 ### 3. Repository Layer (`app/repositories/`)
-- Isolate all SQLAlchemy queries, filters, joins, and manual relation loading.
+- Isolates all SQLAlchemy queries, filters, joins, and manual relation loading.
 - Prevents database leaks into router handlers.
 - Implements efficient manual joins for related models (`ListingImage`, `Amenity`, `User`, `Review`).
 
@@ -101,8 +107,8 @@ flowchart LR
 
 | Endpoint Group | Route / Method | Access Level | Authorization Constraint |
 | :--- | :--- | :--- | :--- |
-| **Listings** | `GET /api/listings` | Public | Only active listings returned |
-| **Listings** | `GET /api/listings/{id}` | Public | Detailed view with host & amenities |
+| **Listings** | `GET /api/listings` | Public | Only active listings returned (newest first) |
+| **Listings** | `GET /api/listings/{id}` | Public | Detailed view with host, photos & amenities |
 | **Listings** | `POST /api/listings` | Host Only | User must have `is_host=True` |
 | **Listings** | `PUT /api/listings/{id}` | Host Owner | Must be host AND `listing.host_id == user.id` |
 | **Listings** | `DELETE /api/listings/{id}` | Host Owner | Soft delete / deactivation by owner |
@@ -113,6 +119,7 @@ flowchart LR
 | **Reviews** | `POST /api/listings/{id}/reviews`| Authenticated | Must have `completed` booking; 1 review per booking |
 | **Wishlist** | `ALL /api/wishlist/*` | Authenticated | Strictly scoped to `user_id == current_user.id` |
 | **Host Portal**| `ALL /api/host/*` | Host Only | User must have `is_host=True`; scoped to host ID |
+| **AI Chat** | `POST /api/chat` | Public / Optional Auth | Personalized if authenticated; context-aware RAG |
 
 ---
 
@@ -171,6 +178,38 @@ flowchart LR
 | `GET` | `/api/host/bookings` | Reservations across all host properties with guest details | `require_host` |
 | `GET` | `/api/host/stats` | Analytics: total earnings, reservation count, listing count | `require_host` |
 
+### 7. StayFinder AI Assistant (`/api/chat`)
+| Method | Endpoint | Description | Auth Required |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/chat` | Context-aware AI assistant querying PostgreSQL + Gemini 1.5 Flash | Optional (Personalizes if logged in) |
+
+**Request Payload**:
+```json
+{
+  "message": "Find me a beach villa in Goa under ₹15000",
+  "listing_id": null,
+  "city": "Goa",
+  "page_context": "explore"
+}
+```
+
+**Response Payload**:
+```json
+{
+  "reply": "Here are top-rated properties matching your search:\n\n• Villa in Goa in Goa for ₹10,000/night...\nClick any listing card below to view details and book.",
+  "suggested_listings": [
+    {
+      "id": "587d8020-06c6-48b2-a0ef-4ade67785f9b",
+      "title": "Villa in Goa",
+      "city": "Goa",
+      "price_per_night": 10000.0,
+      "rating_avg": 4.9,
+      "cover_image_url": "https://images.unsplash.com/..."
+    }
+  ]
+}
+```
+
 ---
 
 ## 🗄️ Database Entity-Relationship (ER) Model
@@ -215,6 +254,7 @@ erDiagram
         FLOAT rating_avg
         INT review_count
         BOOLEAN is_active
+        TIMESTAMP created_at
     }
 
     BOOKINGS {
@@ -242,17 +282,180 @@ erDiagram
 
 ---
 
+## 💳 Out-of-Scope & Future Roadmap: Payment Gateway Microservice
+
+In high-scale marketplace production environments, handling monetary transactions within the monolithic API presents severe compliance, security, and scalability bottlenecks. Payment processing and financial ledgers must be decoupled into an isolated, hardened **Payment Gateway Microservice**.
+
+### 1. High-Level Distributed Architecture
+
+```mermaid
+flowchart TD
+    subgraph ClientLayer["Client Layer"]
+        Browser["Next.js Checkout Page\n(/checkout/[id])"]
+    end
+
+    subgraph CoreMarketplace["Core Marketplace Backend (FastAPI)"]
+        BookingAPI["Booking Service\n(Domain Entity & Temporal Date Locks)"]
+        BookingDB[("PostgreSQL Bookings DB\n(Status: pending_payment)")]
+    end
+
+    subgraph PaymentMicroservice["Payment Gateway Microservice (Isolated VPC / PCI Zone)"]
+        PayAPI["Payment Gateway Engine\n(High-Throughput Go / FastAPI)"]
+        IdempotencyStore[("Redis Cluster\n(Distributed Redlock & Idempotency Keys)")]
+        LedgerDB[("Immutable Financial Ledger DB\n(Double-entry Bookkeeping)")]
+        OutboxTable[("Transactional Outbox\n(Atomic DB Commit)")]
+        OutboxRelay["Outbox CDC / Relay Worker\n(Debezium / Poller)"]
+        WebhookWorker["Webhook Ingestion Worker\n(HMAC-SHA256 Verification & DLQ)"]
+    end
+
+    subgraph ExternalGateways["Payment Service Providers (PSP)"]
+        Stripe["Stripe Connect / Razorpay Route\n(Escrow Vaults & 3DS Authentication)"]
+    end
+
+    subgraph EventStream["Distributed Message Broker"]
+        Kafka["Apache Kafka / RabbitMQ\nTopics: payment.succeeded, payment.failed, escrow.released"]
+    end
+
+    subgraph DownstreamConsumers["Downstream Microservices"]
+        NotificationService["Notification Worker\n(Email Invoice & Push Alert)"]
+        HostPayoutEngine["Host Payout Scheduler\n(Escrow Release at Check-in + 24h)"]
+    end
+
+    Browser -->|1. Initiate Checkout| BookingAPI
+    BookingAPI -->|2. Create Payment Intent Request| PayAPI
+    PayAPI -->|3. Acquire Distributed Lock & Check Idempotency| IdempotencyStore
+    PayAPI -->|4. Create Order / Intent with Escrow Metadata| Stripe
+    Stripe -->|5. Client Secret & SDK Ephemeral Key| Browser
+    Browser -->|6. Submit 3D-Secure Biometrics / OTP| Stripe
+    Stripe -->|7. Async Server-to-Server Webhook| WebhookWorker
+    WebhookWorker -->|8. Verify HMAC Signature & Parse Event| WebhookWorker
+    WebhookWorker -->|9. Write Double-entry Journal & Outbox| LedgerDB
+    LedgerDB -.->|Atomic Insert| OutboxTable
+    OutboxTable -->|10. Stream Committed Records| OutboxRelay
+    OutboxRelay -->|11. Publish Event (payment.succeeded)| Kafka
+    Kafka -->|12. Consume Event: Update Booking -> confirmed| BookingAPI
+    BookingAPI -->|Update Status| BookingDB
+    Kafka -->|13. Trigger Customer Confirmation Email| NotificationService
+    Kafka -->|14. Schedule Payout Release (Check-in + 24h)| HostPayoutEngine
+```
+
+---
+
+### 2. Core Architectural Principles
+
+#### A. PCI-DSS Level 1 Compliance Isolation
+* **Zero PAN Exposure**: Neither the core marketplace database nor its application logs ever touch Primary Account Numbers (PAN), CVVs, or cardholder credentials.
+* **Network Segmentation**: The payment microservice lives inside a hardened private Virtual Private Cloud (VPC) with egress filtering, mutual TLS (mTLS) authentication, and strict IP allowlists for PSP endpoints.
+
+#### B. Distributed Idempotency & Concurrency Control
+* **Idempotency Key Protocol**: Every checkout request requires a client-supplied or gateway-generated `Idempotency-Key` header:
+  $$\text{IdempotencyKey} = \text{HMAC-SHA256}(\text{guest\_id} + \text{booking\_id} + \text{total\_amount} + \text{currency})$$
+* **Atomic Redis Locks**: A Redis lock (`SET lock:<idempotency_key> <uuid> NX PX 30000`) prevents concurrent duplicate charge executions caused by rapid multi-clicks or network retries.
+* **Cached Deterministic Responses**: Once a payment intent transitions to an end state (`succeeded`, `failed`), the completed payload is cached with a 24-hour TTL, ensuring subsequent identical requests receive identical responses without re-charging.
+
+#### C. Transactional Outbox Pattern (Zero Message Loss)
+To eliminate dual-write hazards between relational database commits and asynchronous message publishing (Kafka):
+1. When a payment event succeeds, the ledger update and an outbox event record are committed inside a **single ACID transaction** in PostgreSQL:
+   ```sql
+   BEGIN;
+   INSERT INTO ledger_entries (entry_id, account_id, amount, direction) VALUES (...);
+   INSERT INTO transactional_outbox (event_id, event_type, payload, status) 
+   VALUES (gen_random_uuid(), 'payment.succeeded', '{"booking_id": "...", "amount": 10000}', 'PENDING');
+   COMMIT;
+   ```
+2. A lightweight outbox polling daemon (or Debezium CDC via PostgreSQL write-ahead log) streams the events to Kafka with **at-least-once delivery guarantees**.
+
+#### D. Double-Entry Immutable Accounting Ledger
+All financial movements follow strict double-entry bookkeeping ($Total\ Debits = Total\ Credits$). Accounts are immutable; adjustments require reversing offset transactions:
+
+| Transaction Step | Debit Account | Credit Account | Amount | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| **Guest Payment Captured** | `Cash/Stripe Clearing` | `Guest Funds Escrow` | ₹11,200 | Full charge collected from guest |
+| **Platform Commission Recognized**| `Guest Funds Escrow` | `Marketplace Service Revenue`| ₹1,200 | 12% platform fee |
+| **Host Escrow Allocated** | `Guest Funds Escrow` | `Host Pending Payable` | ₹10,000 | Nightly rate + cleaning fee held for host |
+| **Post Check-in Host Disbursement**| `Host Pending Payable` | `Cash/Stripe Clearing` | ₹10,000 | Direct bank transfer to host (Check-in + 24h) |
+
+#### E. Marketplace Escrow & Split Payout Mechanism
+* **Escrow Holding**: Guest funds remain vaulted in the marketplace escrow balance during the interim period between booking confirmation and guest arrival.
+* **Disbursement Safety Gate**: Host payouts are held until $24\text{ hours}$ after successful guest check-in. If the guest raises a critical accommodation dispute (e.g. key handover failure, misrepresented property), payout disbursement is paused automatically pending arbitration.
+* **PSP Connected Accounts**: Host onboarding utilizes **Stripe Connect Custom/Express** or **Razorpay Route**, enabling automated tax form generation (1099-K) and Know Your Customer (KYC) regulatory compliance.
+
+---
+
+### 3. Payment & Booking Lifecycle State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> PENDING_PAYMENT : Guest initiates checkout
+    PENDING_PAYMENT --> AUTHORIZING : PSP 3DS challenge issued
+    AUTHORIZING --> CAPTURED : 3DS verification successful
+    AUTHORIZING --> FAILED : Card declined / 3DS expired
+    FAILED --> [*] : Release temporal date locks
+    
+    CAPTURED --> ESCROW_HELD : Atomic ledger credit to escrow
+    ESCROW_HELD --> DISPUTED : Guest raises dispute within 24h of check-in
+    DISPUTED --> REFUNDED : Admin arbitrator approves refund
+    REFUNDED --> [*] : Reversed ledger journal
+    
+    ESCROW_HELD --> PAYOUT_SCHEDULED : Check-in + 24h passed without dispute
+    PAYOUT_SCHEDULED --> PAID_OUT : Transfer initiated to host bank account
+    PAID_OUT --> [*] : Transaction finalized
+```
+
+---
+
+### 4. Microservice API Interface Contracts
+
+#### `POST /v1/payments/intents`
+Creates or retrieves a payment intent and returns the client secret for PSP front-end SDKs.
+```json
+// Request Body
+{
+  "booking_id": "7c186007-9a62-4641-85f7-95b8082afeb7",
+  "guest_id": "93b2a09c-c9d3-4fbc-b40b-4654b9cb7462",
+  "host_id": "550e8400-e29b-41d4-a716-446655440000",
+  "currency": "INR",
+  "amount_subtotal": 1000000,
+  "amount_cleaning_fee": 150000,
+  "amount_service_fee": 138000,
+  "total_amount": 1288000
+}
+
+// Response Body (201 Created)
+{
+  "payment_intent_id": "pi_3NskL2K0eL23xL1q2p89x",
+  "client_secret": "pi_3NskL2K0eL23xL1q2p89x_secret_AbCdEf123",
+  "status": "requires_payment_method",
+  "escrow_release_date": "2026-10-15T15:00:00Z"
+}
+```
+
+#### `POST /v1/webhooks/{provider}`
+Secure asynchronous webhook ingestion endpoint.
+* Validates provider signature (e.g. `Stripe-Signature` or `X-Razorpay-Signature` via HMAC-SHA256).
+* Enqueues verified payloads into RabbitMQ / Kafka with dead-letter queue (DLQ) retry policies (exponential backoff with jitter: $2^n + \text{rand}(0, 1)$ seconds).
+
+---
+
+### 5. Current Implementation Note
+> **Simulated Financial Flow**:
+> In this repository's reference implementation, the checkout process simulates the authorization and settlement flow with 100% mathematical integrity:
+> $$\text{Total} = (\text{nights} \times \text{price\_per\_night}) + \text{cleaning\_fee} + \text{service\_fee} \quad \text{where } \text{service\_fee} = \text{round}(0.12 \times \text{subtotal}, 2)$$
+> Upon clicking **"Confirm & Pay"**, the reservation atomically commits to `status = confirmed`, generates a persistent booking record, and links directly to the guest's **Trips** dashboard.
+
+---
+
 ## ⚡ Key Architectural Highlights
 
-1. **Date Overlap Prevention**:
-   Search filters exclude listings that have overlapping `confirmed` or `pending` reservations:
-   $$\text{Existing Booking Check-In} < \text{Requested Check-Out} \quad \land \quad \text{Existing Booking Check-Out} > \text{Requested Check-In}$$
+1. **Deterministic PostgreSQL Pagination**:
+   Search queries use secondary tie-breakers (`ORDER BY created_at DESC, id ASC`) ensuring that pagination (`OFFSET / LIMIT`) is 100% stable without duplicate items across page loads.
 
-2. **SSR Hydration Safety**:
-   Next.js 15 Client Components use a strict `mounted` guard and post-hydration session recovery to guarantee zero HTML mismatch warnings between server SSR and client browser hydration.
+2. **Real-Time Context-Aware AI (RAG)**:
+   The chatbot executes dynamic database queries against active listings and passes factual context to Gemini 1.5 Flash, preventing hallucinated property recommendations.
 
-3. **CORS & Resilience**:
-   Cross-Origin Resource Sharing is configured to support both local web development (`localhost:3000`) and arbitrary origins with credentials enabled.
+3. **SSR Hydration Safety**:
+   Next.js 15 Client Components utilize a strict `mounted` guard and post-hydration session recovery, eliminating HTML mismatch warnings between server SSR and client browser hydration.
 
 4. **Self-Healing Auth**:
    If credentials stored in the browser's `localStorage` become stale or invalid against the database, the authentication context automatically purges stale records and prompts cleanly for re-authentication.
+

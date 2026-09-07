@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { 
   Building2, CheckCircle, Calendar, IndianRupee, 
-  Plus, Pencil, Trash2, Star, MapPin, TrendingUp 
+  Plus, Pencil, Trash2, Star, MapPin, TrendingUp, Eye 
 } from 'lucide-react';
 import { hostApi } from '@/services/hostApi';
 import { useToast } from '@/hooks/useToast';
@@ -269,9 +270,18 @@ export default function HostDashboardPage() {
                         </td>
                         <td className="px-5 py-4 text-right">
                           <div className="flex items-center justify-end gap-1.5">
+                            <Link
+                              href={`/listings/${item.id}`}
+                              aria-label="View listing as guest"
+                              title="View listing as guest"
+                              className="p-2 rounded-xl text-blue-600 hover:text-blue-800 hover:bg-blue-50 transition"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </Link>
                             <button
                               onClick={() => router.push(`/host/listings/${item.id}/edit`)}
                               aria-label="Edit listing"
+                              title="Edit listing"
                               className="p-2 rounded-xl text-gray-600 hover:text-black hover:bg-gray-100 transition"
                             >
                               <Pencil className="w-4 h-4" />
@@ -279,6 +289,7 @@ export default function HostDashboardPage() {
                             <button
                               onClick={() => setDeleteTarget(item.id)}
                               aria-label="Deactivate listing"
+                              title="Deactivate listing"
                               className="p-2 rounded-xl text-rose-500 hover:text-rose-700 hover:bg-rose-50 transition"
                             >
                               <Trash2 className="w-4 h-4" />

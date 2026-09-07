@@ -12,13 +12,23 @@ export function ImageGallery({ images }: Props) {
   const [showModal, setShowModal] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  const validImages = images?.filter((img) => Boolean(img.url && img.url.trim())) || [];
+  const displayImages = validImages.length > 0 ? validImages : [
+    {
+      id: 'default-img',
+      url: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80',
+      is_cover: true,
+      display_order: 0,
+    },
+  ];
+
   const handleNext = useCallback(() => {
-    setCurrentIndex((prev) => (prev + 1) % images.length);
-  }, [images.length]);
+    setCurrentIndex((prev) => (prev + 1) % displayImages.length);
+  }, [displayImages.length]);
 
   const handlePrev = useCallback(() => {
-    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
-  }, [images.length]);
+    setCurrentIndex((prev) => (prev === 0 ? displayImages.length - 1 : prev - 1));
+  }, [displayImages.length]);
 
   useEffect(() => {
     if (!showModal) return;
@@ -33,23 +43,15 @@ export function ImageGallery({ images }: Props) {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [showModal, handleNext, handlePrev]);
 
-  if (!images || images.length === 0) {
-    return (
-      <div className="w-full h-[400px] bg-gray-200 rounded-xl flex items-center justify-center">
-        <span className="text-gray-500">No images available</span>
-      </div>
-    );
-  }
-
-  const mainImage = images[0];
-  const gridImages = images.slice(1, 5);
+  const mainImage = displayImages[0];
+  const gridImages = displayImages.slice(1, 5);
 
   return (
     <>
       <div className="relative w-full mb-8">
         {/* Mobile View */}
         <div className="flex md:hidden overflow-x-auto snap-x snap-mandatory hide-scrollbar">
-          {images.map((img) => (
+          {displayImages.map((img) => (
             <div key={img.id} className="min-w-full snap-center h-[300px]">
               <img src={img.url} alt="Listing" className="w-full h-full object-cover" />
             </div>
@@ -92,7 +94,7 @@ export function ImageGallery({ images }: Props) {
         <div className="fixed inset-0 bg-black/95 z-50 flex flex-col">
           <div className="p-4 flex justify-between items-center text-white">
             <span className="text-sm">
-              {currentIndex + 1} / {images.length}
+              {currentIndex + 1} / {displayImages.length}
             </span>
             <button onClick={() => setShowModal(false)} className="p-2 hover:bg-white/10 rounded-full transition">
               <X className="w-6 h-6" />
@@ -110,7 +112,7 @@ export function ImageGallery({ images }: Props) {
             <div className="max-w-5xl max-h-full w-full h-full flex items-center justify-center">
               <img
                 key={currentIndex}
-                src={images[currentIndex].url}
+                src={displayImages[currentIndex]?.url || displayImages[0]?.url}
                 alt={`Photo ${currentIndex + 1}`}
                 className="max-w-full max-h-full object-contain"
               />

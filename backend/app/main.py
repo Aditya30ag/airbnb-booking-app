@@ -7,6 +7,7 @@ from app.api.routes.bookings import router as bookings_router
 from app.api.routes.reviews import router as reviews_router
 from app.api.routes.host import router as host_router
 from app.api.routes.auth import router as auth_router
+from app.routers.chat import router as chat_router
 
 app = FastAPI(title="Airbnb Marketplace API")
 
@@ -38,6 +39,7 @@ app.include_router(bookings_router)
 app.include_router(reviews_router)
 app.include_router(host_router)
 app.include_router(auth_router)
+app.include_router(chat_router, prefix="/api")
 
 @app.get("/health")
 def health_check():

@@ -1,8 +1,9 @@
 'use client';
 
-import { use } from 'react';
+import { use, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useListing } from '@/hooks/useListing';
+import { useChat } from '@/context/ChatContext';
 import { ImageGallery } from '@/components/listings/ImageGallery';
 import { AmenityList } from '@/components/listings/AmenityList';
 import { BookingCard } from '@/components/booking/BookingCard';
@@ -15,6 +16,12 @@ export default function ListingDetailPage({ params }: { params: Promise<{ id: st
   const { id } = use(params);
   const router = useRouter();
   const { listing, blockedRanges, loading, error } = useListing(id);
+  const { setCurrentListingId } = useChat();
+
+  useEffect(() => {
+    setCurrentListingId(id);
+    return () => setCurrentListingId(null);
+  }, [id, setCurrentListingId]);
 
   if (loading) {
     return (

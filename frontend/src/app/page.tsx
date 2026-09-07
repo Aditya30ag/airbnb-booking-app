@@ -15,6 +15,9 @@ export default function LandingExplorePage() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchParams, setSearchParams] = useState<{ city?: string; guests?: number }>({});
   const [wishlistedIds, setWishlistedIds] = useState<Set<string>>(new Set());
+  const [page, setPage] = useState(1);
+  const [hasNext, setHasNext] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   // Fetch wishlisted listing IDs for current user
   useEffect(() => {
@@ -29,9 +32,11 @@ export default function LandingExplorePage() {
   // Fetch listings with category/search filters
   const fetchListings = useCallback(async () => {
     setLoading(true);
+    setPage(1);
     try {
       const query: Record<string, string> = {
         limit: '24',
+        page: '1',
       };
       if (searchParams.city) {
         query.city = searchParams.city;
@@ -44,14 +49,50 @@ export default function LandingExplorePage() {
       }
 
       const res = await listingService.search(query);
-      setListings(res.items || []);
+      const seen = new Set<string>();
+      const uniqueItems = (res.items || []).filter((item) => {
+        if (seen.has(item.id)) return false;
+        seen.add(item.id);
+        return true;
+      });
+      setListings(uniqueItems);
+      setHasNext(res.has_next);
     } catch (err) {
       console.error('Failed to load listings', err);
       setListings([]);
+      setHasNext(false);
     } finally {
       setLoading(false);
     }
   }, [searchParams, selectedCategory]);
+
+  const handleLoadMore = async () => {
+    if (loadingMore || !hasNext) return;
+    setLoadingMore(true);
+    try {
+      const nextPage = page + 1;
+      const query: Record<string, string> = {
+        limit: '24',
+        page: nextPage.toString(),
+      };
+      if (searchParams.city) query.city = searchParams.city;
+      if (searchParams.guests) query.guests = searchParams.guests.toString();
+      if (selectedCategory !== 'all') query.property_type = selectedCategory;
+
+      const res = await listingService.search(query);
+      setListings((prev) => {
+        const existingIds = new Set(prev.map((l) => l.id));
+        const uniqueIncoming = (res.items || []).filter((l) => !existingIds.has(l.id));
+        return [...prev, ...uniqueIncoming];
+      });
+      setPage(nextPage);
+      setHasNext(res.has_next);
+    } catch (err) {
+      console.error('Failed to load more listings', err);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   useEffect(() => {
     fetchListings();
@@ -140,15 +181,29 @@ export default function LandingExplorePage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10">
-            {listings.map((listing) => (
-              <ListingCard
-                key={listing.id}
-                listing={listing}
-                isWishlisted={wishlistedIds.has(listing.id)}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10">
+              {listings.map((listing, index) => (
+                <ListingCard
+                  key={`${listing.id}-${index}`}
+                  listing={listing}
+                  isWishlisted={wishlistedIds.has(listing.id)}
+                />
+              ))}
+            </div>
+
+            {hasNext && (
+              <div className="mt-14 mb-6 text-center flex flex-col items-center">
+                <button
+                  onClick={handleLoadMore}
+                  disabled={loadingMore}
+                  className="px-8 py-3.5 bg-black hover:bg-gray-800 text-white font-semibold text-sm rounded-2xl shadow-sm transition active:scale-95 disabled:opacity-50 flex items-center gap-2"
+                >
+                  {loadingMore ? 'Loading more stays...' : 'Show more stays'}
+                </button>
+              </div>
+            )}
+          </>
         )}
       </main>
 

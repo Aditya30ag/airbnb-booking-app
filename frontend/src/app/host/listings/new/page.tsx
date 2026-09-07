@@ -39,13 +39,19 @@ export default function NewListingPage() {
       })),
     };
 
-    await apiClient('/api/listings', {
+    const created = await apiClient<{ id: string }>('/api/listings', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
 
-    addToast('Listing created!', 'success');
-    setTimeout(() => { router.push('/host'); }, 1200);
+    addToast('Listing created successfully! Taking you to view it...', 'success');
+    setTimeout(() => {
+      if (created?.id) {
+        router.push(`/listings/${created.id}`);
+      } else {
+        router.push('/host');
+      }
+    }, 1000);
   };
 
   return (

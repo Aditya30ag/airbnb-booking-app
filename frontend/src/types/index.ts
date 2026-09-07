@@ -213,3 +213,14 @@ export interface ImageEntry {
   is_cover: boolean;
   display_order: number;
 }
+
+export interface ChatResponse {
+  reply: string;
+  suggested_listings?: ListingCardResponse[] | null;
+}
+
+export interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  listings?: ListingCardResponse[] | null;
+}

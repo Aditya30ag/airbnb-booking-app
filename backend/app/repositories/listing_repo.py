@@ -13,9 +13,22 @@ def get_listing_by_id(db: Session, listing_id: UUID) -> Optional[Listing]:
     if not listing:
         return None
     # Manually attach related data as attributes
-    listing.images = db.execute(
+    raw_images = db.execute(
         select(ListingImage).where(ListingImage.listing_id == listing_id).order_by(ListingImage.display_order)
     ).scalars().all()
+    valid_images = [img for img in raw_images if img.url and img.url.strip()]
+    if not valid_images:
+        fallback_img = ListingImage(
+            id=uuid.uuid4(),
+            listing_id=listing_id,
+            url="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+            is_cover=True,
+            display_order=0
+        )
+        listing.images = [fallback_img]
+    else:
+        listing.images = valid_images
+
     listing.amenities = db.execute(
         select(Amenity).join(ListingAmenity, Amenity.id == ListingAmenity.amenity_id)
         .where(ListingAmenity.listing_id == listing_id)
@@ -52,7 +65,19 @@ def search_listings(
         query = query.where(Listing.price_per_night <= max_price)
         
     if property_type:
-        query = query.where(Listing.property_type == property_type)
+        pt_norm = property_type.lower().strip()
+        if pt_norm in ("beach", "beach_house", "beachfront"):
+            query = query.where(Listing.property_type.in_(["beach", "beach_house", "Beach", "Beachfront", "Beach House"]))
+        elif pt_norm in ("mountain", "mountains", "mountain_cabin"):
+            query = query.where(Listing.property_type.in_(["mountain", "mountain_cabin", "Mountain", "Mountains", "Mountain Cabin"]))
+        elif pt_norm in ("villa", "villas"):
+            query = query.where(Listing.property_type.in_(["villa", "Villa", "villas", "Villas"]))
+        elif pt_norm in ("cabin", "cabins"):
+            query = query.where(Listing.property_type.in_(["cabin", "Cabin", "cabins", "mountain_cabin"]))
+        elif pt_norm in ("apartment", "apartments"):
+            query = query.where(Listing.property_type.in_(["apartment", "Apartment", "city_apartment", "City Apartment"]))
+        else:
+            query = query.where(Listing.property_type.ilike(f"%{property_type}%"))
         
     if amenity_ids:
         # Require all specified amenities or at least just join and filter?
@@ -81,18 +106,33 @@ def search_listings(
     # Count total
     total_count = db.execute(select(func.count()).select_from(query.subquery())).scalar() or 0
 
-    # Pagination
-    query = query.offset((page - 1) * limit).limit(limit)
+    # Order by newest first with deterministic tie-breaker to prevent pagination overlap
+    query = query.order_by(Listing.created_at.desc(), Listing.id.asc()).offset((page - 1) * limit).limit(limit)
     listings = list(db.execute(query).scalars().all())
 
     for listing in listings:
         cover = db.execute(
             select(ListingImage).where(
                 ListingImage.listing_id == listing.id,
-                ListingImage.is_cover == True
+                ListingImage.is_cover == True,
+                ListingImage.url != "",
+                ListingImage.url.isnot(None)
             ).limit(1)
         ).scalars().first()
-        listing.cover_image_url = cover.url if cover else None
+
+        if not cover:
+            cover = db.execute(
+                select(ListingImage).where(
+                    ListingImage.listing_id == listing.id,
+                    ListingImage.url != "",
+                    ListingImage.url.isnot(None)
+                ).order_by(ListingImage.display_order).limit(1)
+            ).scalars().first()
+
+        listing.cover_image_url = (
+            cover.url.strip() if (cover and cover.url and cover.url.strip())
+            else "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80"
+        )
 
     return listings, total_count
 
