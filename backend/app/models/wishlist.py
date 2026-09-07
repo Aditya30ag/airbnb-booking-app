@@ -2,7 +2,7 @@ import uuid
 from sqlalchemy import Column, DateTime, ForeignKey, Index, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
-from app.database import Base
+from app.db.base import Base
 
 class Wishlist(Base):
     __tablename__ = 'wishlists'

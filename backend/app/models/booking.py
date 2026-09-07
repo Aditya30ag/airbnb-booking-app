@@ -3,7 +3,7 @@ import enum
 from sqlalchemy import Column, Boolean, DateTime, Date, Integer, Numeric, ForeignKey, Enum, Index
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
-from app.database import Base
+from app.db.base import Base
 
 class BookingStatus(str, enum.Enum):
     pending = 'pending'

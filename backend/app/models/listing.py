@@ -2,7 +2,7 @@ import uuid
 from sqlalchemy import Column, String, Boolean, DateTime, Integer, Float, Numeric, ForeignKey, Index
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
-from app.database import Base
+from app.db.base import Base
 
 class ListingAmenity(Base):
     __tablename__ = 'listing_amenities'

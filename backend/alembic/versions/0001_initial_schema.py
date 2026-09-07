@@ -19,10 +19,10 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     # Create enums
-    role_enum = postgresql.ENUM('guest', 'host', name='roleenum')
-    role_enum.create(op.get_bind())
-    booking_status_enum = postgresql.ENUM('pending', 'confirmed', 'cancelled', 'completed', name='bookingstatus')
-    booking_status_enum.create(op.get_bind())
+    role_enum = postgresql.ENUM('guest', 'host', name='roleenum', create_type=False)
+    role_enum.create(op.get_bind(), checkfirst=True)
+    booking_status_enum = postgresql.ENUM('pending', 'confirmed', 'cancelled', 'completed', name='bookingstatus', create_type=False)
+    booking_status_enum.create(op.get_bind(), checkfirst=True)
 
     # users
     op.create_table('users',
@@ -197,5 +197,5 @@ def downgrade() -> None:
     op.drop_table('users')
     
     # Drop enums
-    postgresql.ENUM(name='roleenum').drop(op.get_bind())
-    postgresql.ENUM(name='bookingstatus').drop(op.get_bind())
+    postgresql.ENUM(name='roleenum').drop(op.get_bind(), checkfirst=True)
+    postgresql.ENUM(name='bookingstatus').drop(op.get_bind(), checkfirst=True)
