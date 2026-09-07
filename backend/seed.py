@@ -13,6 +13,7 @@ from app.models.listing import Listing, ListingImage, Amenity, ListingAmenity
 from app.models.booking import Booking, BookingStatus
 from app.models.review import Review
 from app.models.wishlist import Wishlist
+from app.repositories.listing_repo import CITY_COORDINATES
 
 def seed():
     db = SessionLocal()
@@ -145,6 +146,54 @@ def seed():
                 "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800",
                 "https://images.unsplash.com/photo-1544984243-ec57ea16fe25?w=800",
                 "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800",
+            ],
+            "countryside": [
+                "https://images.unsplash.com/photo-1500076656116-558758c991c1?w=800",
+                "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=800",
+                "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800",
+                "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800",
+                "https://images.unsplash.com/photo-1470246973918-29a93221c455?w=800",
+                "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800",
+            ],
+            "tropical": [
+                "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=800",
+                "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800",
+                "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800",
+                "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+                "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800",
+                "https://images.unsplash.com/photo-1544984243-ec57ea16fe25?w=800",
+            ],
+            "bed_and_breakfast": [
+                "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+                "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800",
+                "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=800",
+                "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=800",
+                "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?w=800",
+                "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=800",
+            ],
+            "loft": [
+                "https://images.unsplash.com/photo-1536376072261-38c75010e6c9?w=800",
+                "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800",
+                "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800",
+                "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800",
+                "https://images.unsplash.com/photo-1505691938895-1758d7feb511?w=800",
+                "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=800",
+            ],
+            "rooms": [
+                "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?w=800",
+                "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800",
+                "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800",
+                "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800",
+                "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=800",
+                "https://images.unsplash.com/photo-1540518614846-7ede433c4550?w=800",
+            ],
+            "iconic": [
+                "https://images.unsplash.com/photo-1570168007204-dfb528c6958f?w=800",
+                "https://images.unsplash.com/photo-1587474260584-136574528ed5?w=800",
+                "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800",
+                "https://images.unsplash.com/photo-1599661046289-e31897846e41?w=800",
+                "https://images.unsplash.com/photo-1561361066-6b2223a55395?w=800",
+                "https://images.unsplash.com/photo-1558431382-27e303142255?w=800",
             ]
         }
 
@@ -196,6 +245,54 @@ def seed():
             # Delhi / Gurgaon
             ("Delhi", "apartment", "Hauz Khas Village Monument View Penthouse", "Overlooks the 13th-century historic reservoir and park with bohemian interiors and private sunset terrace.", 6500, 700, 3, 1, 2, 1),
             ("Delhi", "villa", "Chhatarpur Green Estate Farmhouse with Private Pool", "Sprawling luxury farmhouse on lush 2-acre private grounds with lawn games, BBQ pavilion, and pool.", 22000, 2500, 12, 5, 6, 5),
+
+            # Countryside
+            ("Coorg", "countryside", "Sprawling Coffee Plantation Farmhouse in Coorg", "Nestled inside a 40-acre organic coffee and pepper estate with mist-covered hills, bonfire courtyards, and home-cooked Kodava meals.", 7800, 700, 6, 3, 3, 2, "entire", "Karnataka"),
+            ("Wayanad", "countryside", "Rustic Organic Farmstay & Spice Valley Retreat", "Escape the rush in this eco-friendly earthen farmhouse surrounded by tea plantations, stream-side trails, and bamboo groves.", 5400, 500, 4, 2, 2, 2, "entire", "Kerala"),
+            ("Panchgani", "countryside", "Strawberry Country Stone Barn & Sunset Orchards", "Panoramic Western Ghats vistas with sprawling strawberry fields, stone fire pit, stargazing hammock deck, and fresh dairy breakfasts.", 6900, 600, 5, 2, 3, 2, "entire", "Maharashtra"),
+            ("Chikmagalur", "countryside", "Mullayanagiri Foothills Coffee Country Manor", "Colonial teakwood estate home overlooking verdant valley slopes with guided estate walks and open-air gazebo dining.", 8500, 800, 8, 4, 4, 3, "entire", "Karnataka"),
+            ("Nashik", "countryside", "Sunlit Vineyard Country Villa & Olive Orchard", "Stay among working grape vines in India's wine capital with private infinity plunge pool, wine cellar access, and countryside tranquility.", 11200, 1100, 6, 3, 3, 3, "entire", "Maharashtra"),
+            ("Delhi", "countryside", "Aravalli Ridge Farmhouse & Organic Citrus Grove", "Tranquil green sanctuary on the Delhi-NCR countryside border with manicured lawns, horse stables, and country farm-to-table dining.", 14500, 1500, 10, 4, 5, 4, "entire", "Haryana"),
+
+            # Tropical
+            ("Goa", "tropical", "Lush Tropical Palm Oasis with Lagoon Pool in Mandrem", "Hidden jungle paradise surrounded by swaying coconut palms, Balinese daybeds, outdoor rain showers, and lotus ponds.", 13500, 1300, 6, 3, 3, 3, "entire", "Goa"),
+            ("Kovalam", "tropical", "Tropical Coconut Grove Beachside Sanctuary", "Just steps from the Arabian Sea, this tropical hideaway features open-air teak pavilions, hammock gardens, and fresh sea breezes.", 8200, 800, 4, 2, 2, 2, "entire", "Kerala"),
+            ("Varkala", "tropical", "Clifftop Tropical Treehouse & Ayurvedic Oasis", "Perched high amidst tropical palm canopies overlooking red laterite cliffs with private yoga deck and natural plunge pool.", 6800, 600, 2, 1, 1, 1, "entire", "Kerala"),
+            ("Havelock", "tropical", "Private Andaman Tropical Rainforest Bungalow", "Immerse yourself in pristine tropical island luxury under towering mahogany trees with coral reef snorkeling right off the shore.", 16000, 1500, 6, 2, 3, 2, "entire", "Andaman and Nicobar"),
+            ("Alibaug", "tropical", "Tropical Frangipani Villa with Private Lap Pool", "Sun-drenched coastal retreat surrounded by lush tropical ferns, mango orchards, and outdoor open-sky bathing courtyards.", 14800, 1400, 8, 4, 4, 4, "entire", "Maharashtra"),
+            ("Kochi", "tropical", "Kumarakom Tropical Lagoon Waterfront Haven", "Surrounded by emerald water channels, water lilies, and tropical bird sanctuaries with traditional wooden jetty.", 10500, 1000, 5, 2, 3, 2, "entire", "Kerala"),
+
+            # B&Bs (Bed and Breakfast)
+            ("Pondicherry", "bed_and_breakfast", "La Maison Rose French Colonial Boutique B&B", "Charming French Quarter townhouse featuring sunlit bougainvillea terraces, antique four-poster beds, and fresh daily croissants.", 5800, 500, 3, 1, 2, 1, "entire", "Puducherry"),
+            ("Darjeeling", "bed_and_breakfast", "Windamere View Colonial Tea Estate B&B", "Warm fireplace parlor, fresh Darjeeling first-flush tea served every morning, and breathtaking views of Mt. Kanchenjunga.", 6200, 600, 4, 2, 2, 2, "entire", "West Bengal"),
+            ("Jaipur", "bed_and_breakfast", "Haveli Marigold Boutique Bed & Breakfast", "Family-run Rajasthani heritage home serving authentic kachori breakfasts in a shaded marble jharokha courtyard.", 4600, 400, 2, 1, 1, 1, "entire", "Rajasthan"),
+            ("Kochi", "bed_and_breakfast", "Fort Kochi Malabar Spice Garden Homestay & B&B", "Heritage Dutch colonial dwelling with a fragrant spice garden, hand-ground filter coffee, and traditional appam breakfasts.", 3900, 400, 3, 1, 2, 1, "entire", "Kerala"),
+            ("Mysore", "bed_and_breakfast", "Royal Chamundi Heritage Courtyard B&B", "Graceful art-deco residence near Mysore Palace serving hot Mysore masala dosas, filter coffee, and tranquil garden seating.", 4200, 400, 4, 2, 2, 1, "entire", "Karnataka"),
+            ("Shimla", "bed_and_breakfast", "Cedar Glen Heritage Cottage & Breakfast", "Cozy British-era wooden cottage in Jakhu hills with wood-burning stoves, homemade apple preserves, and panoramic ridge views.", 5500, 500, 4, 2, 2, 2, "entire", "Himachal Pradesh"),
+
+            # Lofts
+            ("Mumbai", "loft", "Bandra Bohemian Industrial Art Loft with Skylights", "Double-height industrial ceilings, exposed red brick, large atelier windows, and custom vintage furnishings in hipster Bandra.", 9800, 900, 3, 1, 2, 1, "entire", "Maharashtra"),
+            ("Bangalore", "loft", "Koramangala Minimalist Glass & Steel Tech Loft", "Futuristic open-plan urban loft featuring smart automation, private plant-filled terrace, mezzanine workspace, and gigabit fiber.", 6400, 600, 2, 1, 1, 1, "entire", "Karnataka"),
+            ("Delhi", "loft", "Hauz Khas Village Artist Loft Overlooking Heritage Lake", "Boho-chic design loft with wrought-iron spiral staircase, raw concrete walls, rooftop access, and steps to Hauz Khas ruins.", 7200, 700, 3, 1, 2, 1, "entire", "Delhi"),
+            ("Hyderabad", "loft", "Jubilee Hills Designer Open-Concept Penthouse Loft", "Ultra-sleek modern loft with high ceilings, acoustic isolation, curated modern art, and sweeping skyline views of Durgam Cheruvu.", 8400, 800, 4, 2, 2, 2, "entire", "Telangana"),
+            ("Pune", "loft", "Koregaon Park Greenery Glasshouse Loft", "Sun-drenched biophilic loft surrounded by towering banyan canopies with hammock corner, espresso bar, and reading nook.", 5200, 500, 2, 1, 1, 1, "entire", "Maharashtra"),
+            ("Goa", "loft", "Assagao Architectural Mezzanine Loft in Mango Orchard", "Unique blend of modern glass architecture and Goan greenery, floating steel staircase, and private plunge pool.", 11500, 1100, 4, 1, 2, 2, "entire", "Goa"),
+
+            # Private Rooms
+            ("Udaipur", "rooms", "Deluxe Lake Pichola Private Room in Heritage Haveli", "Peaceful ensuite private room with antique jharokha window framing the City Palace and sparkling lake waters.", 3200, 300, 2, 1, 1, 1, "private_room", "Rajasthan"),
+            ("Manali", "rooms", "Cozy Pine Attic Private Room with Balcony & Fireplace", "Warm cedar-paneled private room high in Old Manali with private balcony facing the snow-capped Rohtang peaks.", 2400, 250, 2, 1, 1, 1, "private_room", "Himachal Pradesh"),
+            ("Rishikesh", "rooms", "Ganga Riverside Meditation Private Suite with Terrace", "Tranquil private room with ensuite bath, meditation cushions, and private terrace overlooking the sacred emerald river.", 2800, 300, 2, 1, 1, 1, "private_room", "Uttarakhand"),
+            ("Mumbai", "rooms", "Colaba Victorian Art Deco Private Room near Gateway", "Spacious heritage high-ceiling room with private bath, vintage teak desk, and walking distance to the Gateway of India.", 4500, 400, 2, 1, 1, 1, "private_room", "Maharashtra"),
+            ("Bangalore", "rooms", "Indiranagar Serene Garden View Master Bedroom", "Airy master bedroom with private balcony, ensuite rain shower, and quiet work desk in a leafy Indiranagar villa.", 2600, 250, 2, 1, 1, 1, "private_room", "Karnataka"),
+            ("Jaipur", "rooms", "Peacock Courtyard Heritage Private Room", "Charming room with traditional fresco accents, private ensuite bathroom, and direct access to a fragrant marble courtyard.", 2200, 200, 2, 1, 1, 1, "private_room", "Rajasthan"),
+
+            # Iconic Cities
+            ("Mumbai", "iconic", "Iconic Marine Drive Art Deco Promenade Suite", "Unobstructed panoramic view of the Queen's Necklace and Arabian Sea from this legendary South Mumbai heritage landmark.", 22000, 2000, 4, 2, 2, 2, "entire", "Maharashtra"),
+            ("Delhi", "iconic", "Lutyens Heritage Residence near India Gate", "Prestigious address in the heart of the national capital with grand colonial columns, private lawns, and 24/7 security.", 18500, 1800, 6, 3, 3, 3, "entire", "Delhi"),
+            ("Agra", "iconic", "Taj Mahal Sunset View Rooftop Luxury Residence", "Wake up to breathtaking direct vistas of the Taj Mahal dome from your private rooftop jacuzzi and marble lounge.", 14000, 1400, 4, 2, 2, 2, "entire", "Uttar Pradesh"),
+            ("Jaipur", "iconic", "Hawa Mahal Iconic Palace Vista Penthouse", "Direct eye-level views of the Palace of Winds with royal Rajasthani interiors, private plunge pool, and rooftop dining.", 15500, 1500, 6, 3, 3, 3, "entire", "Rajasthan"),
+            ("Varanasi", "iconic", "Sacred Ghats Floating Balcony Suite on the Ganga", "Peerless private balcony hanging right over Dashashwamedh Ghat for the evening Ganga Aarti and morning boat processions.", 11000, 1000, 4, 2, 2, 2, "entire", "Uttar Pradesh"),
+            ("Kolkata", "iconic", "Park Street Grand Colonial Residence near Victoria Memorial", "Stately colonial high-ceiling residence with British vintage chandeliers, Burma teak flooring, and piano parlor.", 12500, 1200, 6, 3, 3, 3, "entire", "West Bengal"),
         ]
 
         host_users = [u for u in users_by_email.values() if u.is_host]
@@ -204,17 +301,28 @@ def seed():
         listings_created = 0
 
         for bp in listing_blueprints:
-            city, p_type, title, desc, price, clean_fee, max_g, bedr, beds, baths = bp
+            if len(bp) == 12:
+                city, p_type, title, desc, price, clean_fee, max_g, bedr, beds, baths, r_type, state_val = bp
+            else:
+                city, p_type, title, desc, price, clean_fee, max_g, bedr, beds, baths = bp
+                r_type = "private_room" if p_type in ("rooms", "private_room") else "entire"
+                state_val = "State"
+
             host = random.choice(host_users)
 
             existing = db.query(Listing).filter_by(title=title).first()
             if not existing:
+                city_lower = city.lower().strip()
+                base_lat, base_lng = CITY_COORDINATES.get(city_lower, (15.4989, 73.8278))
+                lat = round(base_lat + random.uniform(-0.02, 0.02), 4)
+                lng = round(base_lng + random.uniform(-0.02, 0.02), 4)
+
                 listing = Listing(
                     host_id=host.id,
                     title=title,
                     description=desc,
                     property_type=p_type,
-                    room_type="entire",
+                    room_type=r_type,
                     max_guests=max_g,
                     bedrooms=bedr,
                     beds=beds,
@@ -223,8 +331,10 @@ def seed():
                     cleaning_fee=clean_fee,
                     address=f"{random.randint(10, 999)} Heritage Way, {city}",
                     city=city,
-                    state="State",
+                    state=state_val,
                     country="India",
+                    latitude=lat,
+                    longitude=lng,
                     rating_avg=round(random.uniform(4.75, 4.98), 2),
                     review_count=random.randint(8, 64),
                     is_active=True

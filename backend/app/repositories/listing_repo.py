@@ -76,6 +76,18 @@ def search_listings(
             query = query.where(Listing.property_type.in_(["cabin", "Cabin", "cabins", "mountain_cabin"]))
         elif pt_norm in ("apartment", "apartments"):
             query = query.where(Listing.property_type.in_(["apartment", "Apartment", "city_apartment", "City Apartment"]))
+        elif pt_norm in ("countryside", "country", "farm", "farmhouse"):
+            query = query.where(Listing.property_type.in_(["countryside", "Countryside", "farmhouse", "farm"]))
+        elif pt_norm in ("tropical", "tropics"):
+            query = query.where(Listing.property_type.in_(["tropical", "Tropical"]))
+        elif pt_norm in ("bed_and_breakfast", "bed and breakfast", "b&b", "b&bs", "bnb"):
+            query = query.where(Listing.property_type.in_(["bed_and_breakfast", "Bed and Breakfast", "b&b", "B&B", "bnb", "B&Bs"]))
+        elif pt_norm in ("loft", "lofts"):
+            query = query.where(Listing.property_type.in_(["loft", "lofts", "Loft", "Lofts"]))
+        elif pt_norm in ("rooms", "room", "private_room", "private room", "private_rooms"):
+            query = query.where(or_(Listing.property_type.in_(["rooms", "room", "private_room", "Private Room", "Rooms"]), Listing.room_type == "private_room"))
+        elif pt_norm in ("iconic", "iconic_cities", "iconic cities", "iconic_city"):
+            query = query.where(Listing.property_type.in_(["iconic", "iconic_cities", "Iconic Cities", "Iconic City", "iconic_city"]))
         else:
             query = query.where(Listing.property_type.ilike(f"%{property_type}%"))
         
@@ -161,6 +173,19 @@ CITY_COORDINATES = {
     "dharamshala": (32.2190, 76.3234),
     "kasol": (32.0100, 77.3152),
     "ooty": (11.4102, 76.6950),
+    "coorg": (12.4244, 75.7382),
+    "wayanad": (11.6854, 76.1320),
+    "chikmagalur": (13.3161, 75.7720),
+    "panchgani": (17.9237, 73.8007),
+    "nashik": (19.9975, 73.7898),
+    "kovalam": (8.4004, 76.9787),
+    "alibaug": (18.6414, 72.8722),
+    "darjeeling": (27.0410, 88.2663),
+    "mysore": (12.2958, 76.6394),
+    "pune": (18.5204, 73.8567),
+    "agra": (27.1767, 78.0081),
+    "varanasi": (25.3176, 82.9739),
+    "kolkata": (22.5726, 88.3639),
 }
 
 def create_listing(db: Session, host_id: UUID, data: ListingCreate) -> Listing:

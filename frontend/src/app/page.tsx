@@ -251,17 +251,6 @@ export default function LandingExplorePage() {
           </button>
         </div>
       )}
-
-      {/* Footer */}
-      <footer className="border-t bg-gray-50 mt-16 py-8 text-xs text-gray-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p>© 2026 Airbnb, Inc. · Privacy · Terms · Sitemap · Company details</p>
-          <div className="flex items-center gap-6 font-semibold text-gray-700">
-            <span>English (IN)</span>
-            <span>₹ INR</span>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
