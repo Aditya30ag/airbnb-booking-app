@@ -69,14 +69,15 @@ export function BookingCard({ listing, blockedRanges }: Props) {
     
     if (nights <= 0) return null;
 
-    const subtotal = nights * listing.price_per_night;
-    const cleaningFee = listing.cleaning_fee || 0;
-    const serviceFee = subtotal * 0.12;
+    const pricePerNight = Number(listing.price_per_night) || 0;
+    const cleaningFee = Number(listing.cleaning_fee) || 0;
+    const subtotal = nights * pricePerNight;
+    const serviceFee = Math.round(subtotal * 0.12);
     const total = subtotal + cleaningFee + serviceFee;
 
     return {
       nights,
-      pricePerNight: listing.price_per_night,
+      pricePerNight,
       subtotal,
       cleaningFee,
       serviceFee,
@@ -122,7 +123,7 @@ export function BookingCard({ listing, blockedRanges }: Props) {
   const content = (
     <div className="flex flex-col gap-4">
       <div className="text-2xl font-semibold">
-        ₹{listing.price_per_night} <span className="text-base font-normal text-gray-500">night</span>
+        ₹{Number(listing.price_per_night).toLocaleString('en-IN')} <span className="text-base font-normal text-gray-500">night</span>
       </div>
 
       <div className="border rounded-xl flex flex-col border-gray-400 overflow-hidden">
@@ -208,10 +209,10 @@ export function BookingCard({ listing, blockedRanges }: Props) {
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t p-4 flex items-center justify-between z-40">
         <div className="flex flex-col">
           <div className="font-semibold text-lg">
-            ₹{listing.price_per_night} <span className="text-sm font-normal">night</span>
+            ₹{Number(listing.price_per_night).toLocaleString('en-IN')} <span className="text-sm font-normal">night</span>
           </div>
           {checkIn && checkOut && priceBreakdown ? (
-            <span className="text-xs underline font-semibold mt-1">₹{priceBreakdown.total} total</span>
+            <span className="text-xs underline font-semibold mt-1">₹{Number(priceBreakdown.total).toLocaleString('en-IN')} total</span>
           ) : (
             <a href="#booking-section" className="text-sm underline font-semibold mt-1">Select dates</a>
           )}

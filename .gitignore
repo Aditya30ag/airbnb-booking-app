@@ -43,3 +43,6 @@ Thumbs.db
 .metadata
 
 /frontend/.next/
+
+backend/venv/
+frontend/next-env.d.ts

@@ -70,8 +70,8 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
     }
   };
 
-  const fmt = (n: number) =>
-    new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
+  const fmt = (n: number | string) =>
+    new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(Number(n) || 0);
   const fmtDate = (d: string) =>
     new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
   const inp = (f: string) =>
@@ -139,12 +139,12 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
   }
 
   const breakdown: PriceBreakdownType = {
-    nights: booking.nights,
-    pricePerNight: booking.price_per_night,
-    subtotal: booking.subtotal,
-    cleaningFee: booking.cleaning_fee,
-    serviceFee: booking.service_fee,
-    total: booking.total,
+    nights: Number(booking.nights),
+    pricePerNight: Number(booking.price_per_night),
+    subtotal: Number(booking.subtotal),
+    cleaningFee: Number(booking.cleaning_fee),
+    serviceFee: Number(booking.service_fee),
+    total: Number(booking.total),
   };
 
   return (

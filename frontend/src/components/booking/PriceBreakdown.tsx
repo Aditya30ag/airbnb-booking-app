@@ -7,12 +7,12 @@ interface Props {
 }
 
 export function PriceBreakdown({ breakdown }: Props) {
-  const formatMoney = (amount: number) => {
+  const formatMoney = (amount: number | string) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
       maximumFractionDigits: 0,
-    }).format(amount);
+    }).format(Number(amount) || 0);
   };
 
   return (
@@ -24,7 +24,7 @@ export function PriceBreakdown({ breakdown }: Props) {
         <span>{formatMoney(breakdown.subtotal)}</span>
       </div>
       
-      {breakdown.cleaningFee > 0 && (
+      {Number(breakdown.cleaningFee) > 0 && (
         <div className="flex justify-between">
           <span className="underline decoration-gray-400">Cleaning fee</span>
           <span>{formatMoney(breakdown.cleaningFee)}</span>

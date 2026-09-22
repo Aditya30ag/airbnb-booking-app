@@ -62,8 +62,8 @@ function TripCard({
   const router = useRouter();
   const formatDate = (d: string) =>
     new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-  const formatMoney = (n: number) =>
-    new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
+  const formatMoney = (n: number | string) =>
+    new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(Number(n) || 0);
 
   return (
     <div className="border border-gray-200 rounded-3xl overflow-hidden bg-white shadow-sm hover:shadow-md transition-all duration-300 flex flex-col sm:flex-row group">
